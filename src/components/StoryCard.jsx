@@ -2,10 +2,12 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { router } from 'expo-router';
 
 const StoryCard = ({ story, loading = false }) => {
   const { colors } = useTheme();
+  const { t, language } = useLanguage();
 
   if (loading) {
     return (
@@ -64,7 +66,7 @@ const StoryCard = ({ story, loading = false }) => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -79,12 +81,9 @@ const StoryCard = ({ story, loading = false }) => {
         backgroundColor: colors.card,
         marginHorizontal: 16,
         marginVertical: 8,
-        borderRadius: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+        borderRadius: colors.radius,
+        borderColor: colors.border,
+        borderWidth: 1,
       }}
       onPress={() => router.push(`/story/${story.id}`)}
       activeOpacity={0.8}
@@ -92,8 +91,8 @@ const StoryCard = ({ story, loading = false }) => {
       <Image
         source={{ uri: story.poster_url }}
         style={{
-          width: 80,
-          height: 80,
+          width: 90,
+          height: 90,
           borderRadius: 8,
           backgroundColor: colors.surface,
           marginRight: 12,
@@ -122,7 +121,7 @@ const StoryCard = ({ story, loading = false }) => {
             }}
             numberOfLines={1}
           >
-            by {story.author}
+            {t('by')} {story.author}
           </Text>
         </View>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -134,26 +133,6 @@ const StoryCard = ({ story, loading = false }) => {
           >
             {formatDate(story.created_at)}
           </Text>
-          {story.is_featured && (
-            <View
-              style={{
-                backgroundColor: colors.primary,
-                paddingHorizontal: 8,
-                paddingVertical: 2,
-                borderRadius: 10,
-              }}
-            >
-              <Text
-                style={{
-                  color: '#FFFFFF',
-                  fontSize: 10,
-                  fontWeight: '600',
-                }}
-              >
-                FEATURED
-              </Text>
-            </View>
-          )}
         </View>
       </View>
     </TouchableOpacity>

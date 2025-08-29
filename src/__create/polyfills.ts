@@ -1,3 +1,3 @@
-import updatedFetch from './fetch';
+import enhancedFetch from './fetch';
 // @ts-ignore
-global.fetch = updatedFetch;
+global.fetch = enhancedFetch;

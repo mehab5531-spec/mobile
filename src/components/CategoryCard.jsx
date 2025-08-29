@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import { useTheme } from '@/contexts/ThemeContext';
 import { router } from 'expo-router';
 
-const CategoryCard = ({ category, loading = false }) => {
+const CategoryCard = ({ category, stories, loading = false }) => {
   const { colors } = useTheme();
 
   if (loading) {
@@ -39,19 +39,17 @@ const CategoryCard = ({ category, loading = false }) => {
     );
   }
 
+  const storyCount = stories ? stories.filter(story => story.category_id === category.id).length : category.stories_count;
+
   return (
     <TouchableOpacity
       style={{
         flex: 1,
         margin: 8,
-        borderRadius: 12,
         overflow: 'hidden',
         backgroundColor: colors.card,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+        borderColor: colors.border,
+        borderRadius: colors.radius,
       }}
       onPress={() => router.push(`/category/${category.id}`)}
       activeOpacity={0.8}
@@ -86,6 +84,17 @@ const CategoryCard = ({ category, loading = false }) => {
             numberOfLines={1}
           >
             {category.name}
+          </Text>
+          <Text
+            style={{
+              color: colors.textSecondary,
+              fontSize: 12,
+              fontWeight: '500',
+              marginTop: 4,
+            }}
+          >
+            {storyCount}{' '}
+            {storyCount === 1 ? 'story' : 'stories'}
           </Text>
         </View>
       </View>

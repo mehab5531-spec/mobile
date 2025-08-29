@@ -1,14 +1,27 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '@/contexts/ThemeContext';
-import { Sun, Moon, Smartphone, RefreshCw, Trash2, Info } from 'lucide-react-native';
-import storageService from '@/services/storageService';
-import syncService from '@/services/syncService';
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { StatusBar } from "expo-status-bar";
+import { BlurView } from "expo-blur";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import {
+  Sun,
+  Moon,
+  Smartphone,
+  RefreshCw,
+  Trash2,
+  Info,
+  Languages,
+} from "lucide-react-native";
+import supabaseClient from "@/services/supabaseClient";
+import syncService from "@/services/syncService";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Link } from "expo-router";
 
 export default function SettingsScreen() {
   const { colors, isDark, theme, toggleTheme } = useTheme();
+  const { t, language, changeLanguage } = useLanguage();
   const insets = useSafeAreaInsets();
   const [syncing, setSyncing] = useState(false);
 
@@ -16,17 +29,21 @@ export default function SettingsScreen() {
     toggleTheme(newTheme);
   };
 
+  const handleLanguageChange = (newLanguage) => {
+    changeLanguage(newLanguage);
+  };
+
   const handleManualSync = async () => {
     setSyncing(true);
     try {
-      const result = await syncService.manualSync();
+      const result = await syncService.manualRefresh();
       if (result.success) {
-        Alert.alert('Sync Complete', result.message);
+        Alert.alert(t("sync_complete"), t("stories_updated_successfully"));
       } else {
-        Alert.alert('Sync Failed', result.message);
+        Alert.alert(t("sync_failed"), result.message);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to sync data');
+      Alert.alert(t("error"), "Failed to sync data");
     } finally {
       setSyncing(false);
     }
@@ -34,31 +51,44 @@ export default function SettingsScreen() {
 
   const handleClearData = () => {
     Alert.alert(
-      'Clear All Data',
-      'This will delete all downloaded stories and categories. Are you sure?',
+      t("clear_all_data_prompt_title"),
+      t("clear_all_data_prompt_message"),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t("cancel"), style: "cancel" },
         {
-          text: 'Clear',
-          style: 'destructive',
+          text: t("clear"),
+          style: "destructive",
           onPress: async () => {
             try {
-              await storageService.clearAllData();
-              Alert.alert('Success', 'All data cleared successfully');
+              // Clear all Supabase cache data
+              await AsyncStorage.multiRemove([
+                "supabase_categories_cache",
+                "supabase_stories_cache",
+                "last_sync_time",
+                "supabase_last_update",
+              ]);
+              Alert.alert(t("success"), t("cache_cleared_successfully"));
             } catch (error) {
-              Alert.alert('Error', 'Failed to clear data');
+              console.error("Error clearing cache:", error);
+              Alert.alert(t("error"), t("failed_to_clear_cache"));
             }
           },
         },
-      ]
+      ],
     );
   };
 
-  const SettingItem = ({ icon: Icon, title, subtitle, onPress, rightElement }) => (
+  const SettingItem = ({
+    icon: Icon,
+    title,
+    subtitle,
+    onPress,
+    rightElement,
+  }) => (
     <TouchableOpacity
       style={{
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: "row",
+        alignItems: "center",
         padding: 16,
         backgroundColor: colors.card,
         marginHorizontal: 16,
@@ -74,8 +104,8 @@ export default function SettingsScreen() {
           height: 40,
           borderRadius: 20,
           backgroundColor: colors.surface,
-          justifyContent: 'center',
-          alignItems: 'center',
+          justifyContent: "center",
+          alignItems: "center",
           marginRight: 12,
         }}
       >
@@ -85,7 +115,7 @@ export default function SettingsScreen() {
         <Text
           style={{
             fontSize: 16,
-            fontWeight: '600',
+            fontWeight: "600", 
             color: colors.text,
             marginBottom: 2,
           }}
@@ -107,13 +137,19 @@ export default function SettingsScreen() {
     </TouchableOpacity>
   );
 
-  const ThemeOption = ({ themeValue, icon: Icon, label, selected, onPress }) => (
+  const ThemeOption = ({
+    themeValue,
+    icon: Icon,
+    label,
+    selected,
+    onPress,
+  }) => (
     <TouchableOpacity
       style={{
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: "row",
+        alignItems: "center",
         padding: 12,
-        backgroundColor: selected ? colors.primary + '20' : colors.surface,
+        backgroundColor: selected ? colors.primary + "20" : colors.surface,
         borderRadius: 8,
         marginBottom: 8,
         borderWidth: selected ? 2 : 1,
@@ -121,13 +157,16 @@ export default function SettingsScreen() {
       }}
       onPress={() => onPress(themeValue)}
     >
-      <Icon size={20} color={selected ? colors.primary : colors.textSecondary} />
+      <Icon
+        size={20}
+        color={selected ? colors.primary : colors.textSecondary}
+      />
       <Text
         style={{
           fontSize: 16,
           color: selected ? colors.primary : colors.text,
           marginLeft: 12,
-          fontWeight: selected ? '600' : 'normal',
+          fontWeight: selected ? "600" : "normal",
         }}
       >
         {label}
@@ -137,33 +176,36 @@ export default function SettingsScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <StatusBar style={isDark ? 'light' : 'dark'} />
-      
+      <StatusBar style={isDark ? "light" : "dark"} />
+
       {/* Header */}
-      <View
+      <BlurView
+        intensity={80}
+        tint={isDark ? "dark" : "light"}
         style={{
           paddingTop: insets.top + 16,
           paddingHorizontal: 16,
           paddingBottom: 16,
-          backgroundColor: colors.background,
           borderBottomWidth: 1,
-          borderBottomColor: colors.border,
+          borderBottomColor: isDark
+            ? "rgba(255,255,255,0.2)"
+            : "rgba(0,0,0,0.2)",
         }}
       >
         <Text
           style={{
             fontSize: 28,
-            fontWeight: 'bold',
+            fontWeight: "bold",
             color: colors.text,
           }}
         >
-          Settings
+          {t("settings")}
         </Text>
-      </View>
+      </BlurView>
 
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Theme Section */}
@@ -171,15 +213,15 @@ export default function SettingsScreen() {
           <Text
             style={{
               fontSize: 18,
-              fontWeight: '600',
+              fontWeight: "600",
               color: colors.text,
               marginHorizontal: 16,
               marginBottom: 12,
             }}
           >
-            Appearance
+            {t("appearance")}
           </Text>
-          
+
           <View
             style={{
               backgroundColor: colors.card,
@@ -191,72 +233,129 @@ export default function SettingsScreen() {
             <Text
               style={{
                 fontSize: 16,
-                fontWeight: '600',
+                fontWeight: "600",
                 color: colors.text,
                 marginBottom: 12,
               }}
             >
-              Theme
+              {t("theme")}
             </Text>
-            
+
             <ThemeOption
               themeValue="light"
               icon={Sun}
-              label="Light"
-              selected={theme === 'light'}
+              label={t("light")}
+              selected={theme === "light"}
               onPress={handleThemeChange}
             />
-            
+
             <ThemeOption
               themeValue="dark"
               icon={Moon}
-              label="Dark"
-              selected={theme === 'dark'}
+              label={t("dark")}
+              selected={theme === "dark"}
               onPress={handleThemeChange}
             />
-            
+
             <ThemeOption
               themeValue="system"
               icon={Smartphone}
-              label="System"
-              selected={theme === 'system'}
+              label={t("system")}
+              selected={theme === "system"}
               onPress={handleThemeChange}
             />
           </View>
         </View>
+
+        {/* Language Section */}
+        <View style={{ marginTop: 24 }}>
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: "600",
+              color: colors.text,
+              marginHorizontal: 16,
+              marginBottom: 12,
+            }}
+          >
+            {t("language")}
+          </Text>
+
+          <View
+            style={{
+              backgroundColor: colors.card,
+              marginHorizontal: 16,
+              borderRadius: 12,
+              padding: 16,
+            }}
+          >
+            <ThemeOption
+              themeValue="en"
+              icon={Languages}
+              label={t("english")}
+              selected={language === "en"}
+              onPress={handleLanguageChange}
+            />
+
+            <ThemeOption
+              themeValue="ar"
+              icon={Languages}
+              label={t("arabic")}
+              selected={language === "ar"}
+              onPress={handleLanguageChange}
+            />
+          </View>
+        </View>
+
+{/* about section with link to /about */}
+          <View
+            style={{
+              backgroundColor: colors.card,
+              marginHorizontal: 16,
+              borderRadius: 12,
+            }}
+          >
+            <Link href="/about">
+              <SettingItem
+                icon={Info}
+                title={t("about")}
+                subtitle={t("version_1.0.0")}
+              />
+            </Link>
+          </View>
 
         {/* Data Section */}
         <View style={{ marginTop: 24 }}>
           <Text
             style={{
               fontSize: 18,
-              fontWeight: '600',
+              fontWeight: "600",
               color: colors.text,
               marginHorizontal: 16,
               marginBottom: 12,
             }}
           >
-            Data Management
+            {t("data_management")}
           </Text>
-          
+
           <SettingItem
             icon={RefreshCw}
-            title="Sync Now"
-            subtitle="Check for new stories and updates"
+            title={t("sync_now")}
+            subtitle={t("check_for_new_stories_and_updates")}
             onPress={handleManualSync}
             rightElement={
               syncing && (
                 <Text style={{ color: colors.primary, fontSize: 14 }}>
-                  Syncing...
+                  {t("syncing")}
                 </Text>
               )
             }
           />
-          
+
           <SettingItem
             icon={Trash2}
-            title="Clear All Data"
-            subtitle="Remove all downloaded stories and categories"
+            title={t("clear_all_data")}
+            subtitle={t("remove_all_downloaded_stories_and_categories")}
             onPress={handleClearData}
           />
         </View>
@@ -266,19 +365,20 @@ export default function SettingsScreen() {
           <Text
             style={{
               fontSize: 18,
-              fontWeight: '600',
+              fontWeight: "600",
               color: colors.text,
               marginHorizontal: 16,
               marginBottom: 12,
             }}
           >
-            About
+            {t("about")}
           </Text>
-          
+
           <SettingItem
             icon={Info}
-            title="Stories App"
-            subtitle="Version 1.0.0 • Offline-first reading experience"
+            title={t("about")}
+            subtitle={t("version_1.0.0")}
+            onPress={() => router.push('/about')}
           />
         </View>
 
@@ -288,12 +388,11 @@ export default function SettingsScreen() {
             style={{
               fontSize: 14,
               color: colors.textSecondary,
-              textAlign: 'center',
+              textAlign: "center",
               lineHeight: 20,
             }}
           >
-            Stories are automatically synced weekly.{'\n'}
-            Pull down to refresh on any screen for manual sync.
+            {t("stories_are_automatically_synced_weekly")}
           </Text>
         </View>
       </ScrollView>

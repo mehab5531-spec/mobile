@@ -6,7 +6,7 @@ const MarkdownRenderer = ({ content }) => {
   const { colors } = useTheme();
 
   const parseMarkdown = (text) => {
-    const lines = text.split('\n');
+    const lines = (text || '').split('\n');
     const elements = [];
     let currentParagraph = '';
 
@@ -138,7 +138,7 @@ const MarkdownRenderer = ({ content }) => {
 
   const renderInlineFormatting = (text) => {
     const parts = [];
-    let currentText = text;
+    let currentText = text || '';
     let key = 0;
 
     // Handle bold text **text**

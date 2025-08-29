@@ -52,19 +52,20 @@ export const ThemeProvider = ({ children }) => {
   const colors = {
     light: {
       primary: '#007AFF',
-      background: '#FFFFFF',
+      background: '#fff3f3ff',
       surface: '#F2F2F7',
       card: '#FFFFFF',
       text: '#000000',
       textSecondary: '#6D6D80',
-      border: '#E5E5EA',
+      border: '#c4c4c4ff',
       accent: '#FF3B30',
       success: '#34C759',
       warning: '#FF9500',
+      radius: 18,
     },
     dark: {
       primary: '#0A84FF',
-      background: '#000000',
+      background: '#000000ff',
       surface: '#1C1C1E',
       card: '#2C2C2E',
       text: '#FFFFFF',
@@ -73,6 +74,7 @@ export const ThemeProvider = ({ children }) => {
       accent: '#FF453A',
       success: '#30D158',
       warning: '#FF9F0A',
+      radius: 18,
     },
   };
 
