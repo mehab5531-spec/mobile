@@ -307,22 +307,6 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-{/* about section with link to /about */}
-          <View
-            style={{
-              backgroundColor: colors.card,
-              marginHorizontal: 16,
-              borderRadius: 12,
-            }}
-          >
-            <Link href="/about">
-              <SettingItem
-                icon={Info}
-                title={t("about")}
-                subtitle={t("version_1.0.0")}
-              />
-            </Link>
-          </View>
 
         {/* Data Section */}
         <View style={{ marginTop: 24 }}>
@@ -374,12 +358,23 @@ export default function SettingsScreen() {
             {t("about")}
           </Text>
 
-          <SettingItem
-            icon={Info}
-            title={t("about")}
-            subtitle={t("version_1.0.0")}
-            onPress={() => router.push('/about')}
-          />
+{/* about section with link to /about */}
+          <View
+            style={{
+              backgroundColor: colors.card,
+              marginHorizontal: 16,
+              borderRadius: 12,
+            }}
+          >
+            <Link href="/about">
+              <SettingItem
+                icon={Info}
+                title={t("about")}
+                subtitle={t("version_1.0.0")}
+              />
+            </Link>
+          </View>
+
         </View>
 
         {/* Footer */}

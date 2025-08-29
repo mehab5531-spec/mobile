@@ -5,7 +5,6 @@ const STORAGE_KEYS = {
   STORIES: 'stories_stories',
   LAST_SYNC: 'stories_last_sync',
   OFFLINE_MODE: 'stories_offline_mode',
-  ONBOARDING_COMPLETED: 'stories_onboarding_completed',
 };
 
 class StorageService {
@@ -163,25 +162,6 @@ class StorageService {
     return Array.from(existingMap.values());
   }
 
-  // Onboarding status
-  async getOnboardingStatus() {
-    try {
-      const status = await AsyncStorage.getItem(STORAGE_KEYS.ONBOARDING_COMPLETED);
-      return status === 'true';
-    } catch (error) {
-      console.error('Error getting onboarding status:', error);
-      return false;
-    }
-  }
-
-  async setOnboardingStatus(completed) {
-    try {
-      await AsyncStorage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETED, String(completed));
-    } catch (error) {
-      console.error('Error setting onboarding status:', error);
-    }
-  }
-
   // Clear all data
   async clearAllData() {
     try {
@@ -190,7 +170,6 @@ class StorageService {
         STORAGE_KEYS.STORIES,
         STORAGE_KEYS.LAST_SYNC,
         STORAGE_KEYS.OFFLINE_MODE,
-        STORAGE_KEYS.ONBOARDING_COMPLETED,
       ]);
       return true;
     } catch (error) {

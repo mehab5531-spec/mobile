@@ -24,6 +24,7 @@
 		"@uploadcare/upload-client": "6.14.3",
 		"color2k": "^2.0.3",
 		"date-fns": "^4.1.0",
+		"eas": "^0.1.0",
 		"expo": "53.0.11",
 		"expo-audio": "~0.4.6",
 		"expo-av": "~15.1.6",

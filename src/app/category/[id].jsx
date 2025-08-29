@@ -21,8 +21,8 @@ import syncService from "@/services/syncService";
 
 export default function CategoryScreen() {
   const { colors, isDark } = useTheme();
-  const { t } = useLanguage();
-  const insets = useSafeAreaInsets();
+  const { t, language } = useLanguage();
+   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams();
   const [category, setCategory] = useState(null);
   const [stories, setStories] = useState([]);

@@ -12,7 +12,7 @@ import { WifiOff } from "lucide-react-native";
 
 export default function CategoriesScreen() {
   const { colors, isDark } = useTheme();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const insets = useSafeAreaInsets();
   const [categories, setCategories] = useState([]);
   const [stories, setStories] = useState([]);
@@ -139,6 +139,7 @@ export default function CategoriesScreen() {
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
+            flexDirection: language === 'ar' ? "row-reverse" : "row",
           }}
         >
           <Text

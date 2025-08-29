@@ -346,9 +346,10 @@ export default function StoryScreen() {
               color: colors.text,
               lineHeight: 34,
               marginBottom: 12,
+              // flexDirection:f
             }}
           >
-            {story.title}
+            {story.idx} - {story.title}
           </Text>
 
           {/* Story Meta */}
